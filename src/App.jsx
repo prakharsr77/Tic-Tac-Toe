@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Player from "./components/Player.jsx";
 import GameBoard from "./components/GameBoard.jsx";
 import Log from "./components/Log.jsx";
 import GameOver from "./components/GameOver.jsx";
 import { WINNING_COMBINATIONS } from "./winning-combinations.js";
+import Confetti from "react-confetti";
 
 const PLAYERS = {
   X: "Player 1",
@@ -66,11 +67,29 @@ function deriveWinner(gameBoard, players) {
 function App() {
   const [players, setPlayers] = useState(PLAYERS);
   const [gameTurns, setGameTurns] = useState([]);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    window.addEventListener("resize", handleWindowSize);
+    return () => {
+      window.removeEventListener("resize", handleWindowSize);
+    };
+  }, [windowSize]);
 
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
   const winner = deriveWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;
+
+  function handleWindowSize() {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  }
 
   function handleSelectSquare(rowIndex, colIndex) {
     setGameTurns((prevTurns) => {
@@ -100,6 +119,9 @@ function App() {
 
   return (
     <main>
+      {winner && (
+        <Confetti width={windowSize.width} height={windowSize.height} />
+      )}
       <div id="game-container">
         <ol id="players" className="highlight-player">
           <Player
